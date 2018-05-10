@@ -1,20 +1,20 @@
 import mpi.*;
 
 import java.util.LinkedList;
+import java.util.Random;
 
 public class Application
 {
-    private static Generator generator;
     public static final int maxNumbers = 100;
+    public static Random random;
 
     public static void main(String[] args)
     {
-        generator = new Generator(maxNumbers);
         MPI.Init(args);
         int buffer[] = new int[2];
         int size = MPI.COMM_WORLD.Size() ;
         int myRank = MPI.COMM_WORLD.Rank();
-        int generatedNumber = generator.next();
+        int generatedNumber = random.nextInt(maxNumbers);
         System.out.println("[PROCESS"+ myRank +"]: The generated number is " + generatedNumber);
         if(myRank > 0){
             buffer[0] = myRank;
