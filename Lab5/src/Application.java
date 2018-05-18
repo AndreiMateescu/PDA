@@ -3,7 +3,7 @@
 #include<time.h>
 #include<Windows.h>
 #define N 5
-#define INF 99999
+#define INF 1000000
 using namespace std;
 
 int graph[N][N] = { 
