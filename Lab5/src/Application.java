@@ -33,7 +33,7 @@ int main(int argc, char** argv)
 	{
 		for (int j = 0; j < N; j++)
 		{
-			if(graph[procid][k] + graph[k][j] < graph[procid][j])
+			if(graph[i][k] + graph[k][j] < graph[procid][j])
 				graph[procid][j] = graph[procid][k] + graph[k][j];
 		}
 
