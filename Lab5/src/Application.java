@@ -34,7 +34,7 @@ int main(int argc, char** argv)
 		for (int j = 0; j < N; j++)
 		{
 			if(graph[i][k] + graph[k][j] < graph[procid][j])
-				graph[procid][j] = graph[procid][k] + graph[k][j];
+				graph[procid][j] = graph[i][k] + graph[k][j];
 		}
 
 		MPI_Allgather(graph[procid], N, MPI_INT, graph, N, MPI_INT, MPI_COMM_WORLD);
