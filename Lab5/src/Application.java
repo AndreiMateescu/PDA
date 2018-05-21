@@ -1,42 +1,63 @@
-import mpi.*;
+#include<mpi.h>
+#include<iostream>
+#include<time.h>
+#include<Windows.h>
+#define N 5
+#define INF 1000000
+using namespace std;
 
-import java.util.LinkedList;
+int graph[N][N] = { 
+		0,3,9,8,3,
+		5,0,1,4,2,
+		6,6,0,4,5,
+		2,9,2,0,7,
+		7,9,3,2,0
+		};
 
-public class Application
+int main(int argc, char** argv)
 {
-    private static Generator generator;
-    public static final int maxNumbers = 100;
+	int size, procid, rc;
 
-    public static void main(String[] args)
-    {
-        generator = new Generator(maxNumbers);
-        MPI.Init(args);
-        int buffer[] = new int[2];
-        int size = MPI.COMM_WORLD.Size() ;
-        int myRank = MPI.COMM_WORLD.Rank();
-        int generatedNumber = generator.next();
-        System.out.println("[PROCESS"+ myRank +"]: The generated number is " + generatedNumber);
-        if(myRank > 0){
-            buffer[0] = myRank;
-            buffer[1] = generatedNumber;
-            MPI.COMM_WORLD.Send(buffer,0,2, MPI.INT,0,0);
-        }
-        if(myRank == 0) {
-            int rank = 0;
-            int maxGeneratedNumber = generatedNumber;
-            for (int i = 1; i < size; i++) {
-                MPI.COMM_WORLD.Recv(buffer, 0, 2, MPI.INT, i, 0);
-                if(buffer[1] > maxGeneratedNumber){
-                    maxGeneratedNumber = buffer[1];
-                    rank = i;
-                } else {
-                    if((buffer[1] == maxGeneratedNumber) && (i > rank)) {
-                        rank = i;
-                    }
-                }
-            }
-            System.out.println("PROCESS MASTER is "+ rank +" with the generated number " + maxGeneratedNumber);
-        }
-        MPI.Finalize();
-    }
+	rc = MPI_Init(&argc, &argv);
+	if (rc != MPI_SUCCESS)
+	{
+		cout << "Error starting MPI program. Terminating.\n";
+		MPI_Abort(MPI_COMM_WORLD, rc);
+	}
+
+	MPI_Comm_size(MPI_COMM_WORLD, &size);
+	MPI_Comm_rank(MPI_COMM_WORLD, &procid);
+
+
+	for (int k = 0; k < N; k++)
+	{
+		for (int j = 0; j < N; j++)
+		{
+			if(graph[i][k] + graph[k][j] < graph[procid][j])
+				graph[procid][j] = graph[i][k] + graph[k][j];
+		}
+
+		MPI_Allgather(graph[procid], N, MPI_INT, graph, N, MPI_INT, MPI_COMM_WORLD);
+		cout << "proc " << procid << " sent broadcast on k = " << k<<endl;
+
+		cout << "proc " << procid << " arrived at barrier on k = " << k << endl;
+		MPI_Barrier(MPI_COMM_WORLD);
+		cout << "proc " << procid << " past barrier on k = " << k << endl;
+	}
+
+	if(procid == 0)
+		for (int i = 0; i < N; i++)
+		{
+			for (int j = 0; j < N; j++)
+			{
+				if (graph[i][j] == INF)
+					cout << "INF ";
+				else
+					cout << graph[i][j] << " ";
+			}
+			cout << endl;
+		}
+
+	MPI_Finalize();
+	return 0;
 }
